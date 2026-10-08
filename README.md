@@ -2,6 +2,8 @@
 
 A playable Rust tribute to wireframe space trading games of the 1980s. Fly to a rotating station, trade between six systems, and defend your ship from pirates. The names and generated geometry are original.
 
+The music and sound effects are original retro synths generated from Rust code. Music starts with the game; **M** mutes or unmutes it. Leaving the browser tab pauses the game and silences audio; press **P** to resume.
+
 ## Play in a browser
 
 Build the Rust game as WebAssembly and collect the complete static site:
@@ -33,6 +35,7 @@ cargo run --release
 - Tab: select the next hyperspace destination
 - J: jump (uses one fuel unit)
 - P: pause or resume
+- M: mute or unmute music and effects
 
 ## Station controls
 

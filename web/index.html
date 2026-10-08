@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#07101d">
+    <meta name="description" content="Wirespace: a Rust wireframe trading arcade game you can play in your browser.">
+    <title>Wirespace — Rust arcade</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="page">
+      <header class="masthead">
+        <div class="brand" aria-label="Wirespace">
+          <span class="brand-mark" aria-hidden="true">◇</span>
+          <div>
+            <h1>WIRESPACE</h1>
+            <p>A wireframe trading arcade</p>
+          </div>
+        </div>
+        <span class="edition">BUILT IN RUST · PLAYED IN THE BROWSER</span>
+      </header>
+
+      <section class="arcade" aria-label="Play Wirespace">
+        <div class="game-frame" id="game-frame">
+          <canvas id="glcanvas" tabindex="0" aria-label="Wirespace game. Press Enter to start. Use keyboard controls listed below."></canvas>
+        </div>
+        <div class="game-bar">
+          <p id="game-status" role="status">Click the game to focus. Keyboard controls are below.</p>
+          <button id="fullscreen" type="button">Fullscreen <span aria-hidden="true">↗</span></button>
+        </div>
+        <p class="mobile-note">For readable gameplay on a small screen, rotate to landscape and use a keyboard.</p>
+      </section>
+
+      <section class="guide" aria-labelledby="controls-title">
+        <div class="guide-heading">
+          <h2 id="controls-title">Flight manual</h2>
+          <p>One ship. Six systems. Make your fortune and keep your shields intact.</p>
+        </div>
+        <div class="control-grid">
+          <div class="control-group">
+            <h3>Fly</h3>
+            <p><kbd>W</kbd> <kbd>S</kbd><span>Throttle</span></p>
+            <p><kbd>↑</kbd> <kbd>↓</kbd><span>Pitch</span></p>
+            <p><kbd>←</kbd> <kbd>→</kbd><span>Roll</span></p>
+            <p><kbd>A</kbd> <kbd>D</kbd><span>Yaw</span></p>
+          </div>
+          <div class="control-group">
+            <h3>Survive</h3>
+            <p><kbd>Space</kbd><span>Fire laser</span></p>
+            <p><kbd>P</kbd><span>Pause</span></p>
+            <p><kbd>M</kbd><span>Mute / unmute</span></p>
+            <p><kbd>R</kbd><span>Restart after defeat</span></p>
+          </div>
+          <div class="control-group">
+            <h3>Travel</h3>
+            <p><kbd>E</kbd><span>Dock when aligned and slow</span></p>
+            <p><kbd>Tab</kbd><span>Choose next system</span></p>
+            <p><kbd>J</kbd><span>Hyperspace jump</span></p>
+          </div>
+          <div class="control-group">
+            <h3>Trade</h3>
+            <p><kbd>↑</kbd> <kbd>↓</kbd><span>Select commodity</span></p>
+            <p><kbd>B</kbd> <kbd>V</kbd><span>Buy / sell</span></p>
+            <p><kbd>F</kbd><span>Refuel</span></p>
+            <p><kbd>U</kbd><span>Undock</span></p>
+          </div>
+        </div>
+      </section>
+      <footer>Approach the station, slow below 30, then dock. Prices change between systems.</footer>
+    </main>
+    <script src="mq_js_bundle.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
