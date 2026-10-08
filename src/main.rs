@@ -1,7 +1,7 @@
-mod game;
-mod sound;
 #[cfg(target_arch = "wasm32")]
 mod browser;
+mod game;
+mod sound;
 
 use game::{Game, HEIGHT, WIDTH};
 use macroquad::prelude::*;
@@ -17,8 +17,28 @@ fn window_conf() -> Conf {
     }
 }
 
-#[macroquad::main(window_conf)]
-async fn main() {
+#[cfg(not(target_arch = "wasm32"))]
+fn main() {
+    if std::env::args().any(|arg| arg == "--export-music") {
+        let path = "target/wirespace-theme.wav";
+        std::fs::create_dir_all("target").expect("create target directory");
+        std::fs::write(path, sound::music_wav()).expect("write generated theme");
+        println!("Wrote {path}");
+        return;
+    }
+    launch();
+}
+
+#[cfg(target_arch = "wasm32")]
+fn main() {
+    launch();
+}
+
+fn launch() {
+    macroquad::Window::from_config(window_conf(), run());
+}
+
+async fn run() {
     let mut game = Game::new();
     let mut audio = sound::Audio::new().await;
     loop {

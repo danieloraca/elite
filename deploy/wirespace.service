@@ -1,0 +1,16 @@
+[Unit]
+Description=Wirespace browser arcade
+After=network.target
+
+[Service]
+Type=simple
+User=danutz
+WorkingDirectory=/home/danutz/Development/elite
+ExecStart=/home/danutz/Development/elite/target/release/wirespace-server
+Environment=WIRESPACE_ADDR=0.0.0.0:3141
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

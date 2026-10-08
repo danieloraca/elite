@@ -15,10 +15,11 @@ pub(crate) enum SoundEvent {
     Trade,
     Undock,
     Nav,
+    Alert,
     GameOver,
 }
 
-const EVENTS: [SoundEvent; 12] = [
+const EVENTS: [SoundEvent; 13] = [
     SoundEvent::Start,
     SoundEvent::Laser,
     SoundEvent::Hit,
@@ -30,6 +31,7 @@ const EVENTS: [SoundEvent; 12] = [
     SoundEvent::Trade,
     SoundEvent::Undock,
     SoundEvent::Nav,
+    SoundEvent::Alert,
     SoundEvent::GameOver,
 ];
 
@@ -49,24 +51,41 @@ impl Audio {
                 effects.push((event, sound));
             }
         }
-        Self { music, effects, muted: false, playing: false }
+        Self {
+            music,
+            effects,
+            muted: false,
+            playing: false,
+        }
     }
 
     pub(crate) fn toggle(&mut self) {
         self.muted = !self.muted;
         if self.muted {
-            if let Some(music) = &self.music { stop_sound(music); }
-            for (_, effect) in &self.effects { stop_sound(effect); }
+            if let Some(music) = &self.music {
+                stop_sound(music);
+            }
+            for (_, effect) in &self.effects {
+                stop_sound(effect);
+            }
             self.playing = false;
         }
     }
 
     pub(crate) fn sync_music(&mut self, active: bool) {
         let should_play = active && !self.muted;
-        if should_play == self.playing { return; }
+        if should_play == self.playing {
+            return;
+        }
         if let Some(music) = &self.music {
             if should_play {
-                play_sound(music, PlaySoundParams { looped: true, volume: 0.24 });
+                play_sound(
+                    music,
+                    PlaySoundParams {
+                        looped: true,
+                        volume: 0.24,
+                    },
+                );
             } else {
                 stop_sound(music);
             }
@@ -75,9 +94,17 @@ impl Audio {
     }
 
     pub(crate) fn play(&self, event: SoundEvent) {
-        if self.muted { return; }
+        if self.muted {
+            return;
+        }
         if let Some((_, sound)) = self.effects.iter().find(|(kind, _)| *kind == event) {
-            play_sound(sound, PlaySoundParams { looped: false, volume: 0.56 });
+            play_sound(
+                sound,
+                PlaySoundParams {
+                    looped: false,
+                    volume: 0.56,
+                },
+            );
         }
     }
 }
@@ -97,7 +124,11 @@ fn note(midi: i32) -> f32 {
 }
 
 fn pulse(phase: f32, duty: f32) -> f32 {
-    if phase.fract() < duty { 1.0 - duty } else { -duty }
+    if phase.fract() < duty {
+        1.0 - duty
+    } else {
+        -duty
+    }
 }
 
 fn triangle(phase: f32) -> f32 {
@@ -138,12 +169,10 @@ fn wav(samples: &[f32]) -> Vec<u8> {
 }
 
 /// A sparse, original minor-key loop. All voices are generated, with no audio assets.
-fn music_wav() -> Vec<u8> {
+pub(crate) fn music_wav() -> Vec<u8> {
     const LEAD: [i32; 32] = [
-        69, 0, 72, 76, 0, 79, 76, 0,
-        67, 0, 71, 74, 0, 79, 74, 0,
-        65, 0, 69, 72, 0, 76, 72, 0,
-        67, 0, 71, 74, 0, 76, 74, 0,
+        69, 0, 72, 76, 0, 79, 76, 0, 67, 0, 71, 74, 0, 79, 74, 0, 65, 0, 69, 72, 0, 76, 72, 0, 67,
+        0, 71, 74, 0, 76, 74, 0,
     ];
     const ROOTS: [i32; 4] = [45, 43, 41, 43];
     let step_seconds = 60.0 / 112.0 / 2.0;
@@ -156,16 +185,24 @@ fn music_wav() -> Vec<u8> {
         let step = (t / step_seconds) as usize;
         let local = t - step as f32 * step_seconds;
         let gate = envelope(local, step_seconds * 0.85);
-        let lead = if LEAD[step] == 0 { 0.0 } else {
+        let lead = if LEAD[step] == 0 {
+            0.0
+        } else {
             pulse(local * note(LEAD[step]), 0.25) * gate * 0.28
         };
         let root = ROOTS[step / 8];
         let bass = if step % 4 == 0 {
-            triangle(local * note(root)) * envelope(local, step_seconds * 1.8) * 0.15
-        } else { 0.0 };
+            triangle(local * note(root)) * envelope(local, step_seconds * 0.95) * 0.15
+        } else {
+            0.0
+        };
         let arp_note = root + [12, 19, 24, 19][step % 4];
         let arp = pulse(local * note(arp_note), 0.5) * envelope(local, step_seconds * 0.42) * 0.05;
-        let tick = if step % 2 == 0 { noise(&mut seed) * (-local * 75.0).exp() * 0.025 } else { 0.0 };
+        let tick = if step % 2 == 0 {
+            noise(&mut seed) * (-local * 75.0).exp() * 0.025
+        } else {
+            0.0
+        };
         samples.push((lead + bass + arp + tick) * envelope(t, duration));
     }
     wav(&samples)
@@ -184,6 +221,7 @@ fn effect_wav(event: SoundEvent) -> Vec<u8> {
         SoundEvent::Trade => 0.18,
         SoundEvent::Undock => 0.32,
         SoundEvent::Nav => 0.08,
+        SoundEvent::Alert => 0.42,
         SoundEvent::GameOver => 1.2,
     };
     let count = (duration * SAMPLE_RATE as f32) as usize;
@@ -200,18 +238,38 @@ fn effect_wav(event: SoundEvent) -> Vec<u8> {
             SoundEvent::Explosion => 110.0 - 65.0 * progress,
             SoundEvent::Damage => 310.0 - 220.0 * progress,
             SoundEvent::Dock => note([72, 76, 79, 84][((progress * 4.0) as usize).min(3)]),
-            SoundEvent::Error => if progress < 0.5 { 175.0 } else { 130.0 },
+            SoundEvent::Error => {
+                if progress < 0.5 {
+                    175.0
+                } else {
+                    130.0
+                }
+            }
             SoundEvent::Jump => 105.0 * 2.0_f32.powf(progress * 3.4),
             SoundEvent::Trade => note(if progress < 0.5 { 76 } else { 83 }),
             SoundEvent::Undock => 150.0 + 400.0 * progress,
             SoundEvent::Nav => 700.0,
+            SoundEvent::Alert => {
+                if (progress * 4.0) as usize % 2 == 0 {
+                    430.0
+                } else {
+                    290.0
+                }
+            }
             SoundEvent::GameOver => note([72, 69, 65, 60][((progress * 4.0) as usize).min(3)]),
         };
         phase += hz / SAMPLE_RATE as f32;
         let tone = if matches!(event, SoundEvent::Explosion | SoundEvent::Damage) {
             triangle(phase)
         } else {
-            pulse(phase, if matches!(event, SoundEvent::Laser | SoundEvent::Jump) { 0.25 } else { 0.5 })
+            pulse(
+                phase,
+                if matches!(event, SoundEvent::Laser | SoundEvent::Jump) {
+                    0.25
+                } else {
+                    0.5
+                },
+            )
         };
         let grit = noise(&mut seed);
         let mixed = match event {
@@ -220,9 +278,14 @@ fn effect_wav(event: SoundEvent) -> Vec<u8> {
             SoundEvent::Laser | SoundEvent::Jump => tone * 0.85 + grit * 0.15,
             _ => tone,
         };
-        let decay = if matches!(event, SoundEvent::Explosion | SoundEvent::Damage | SoundEvent::Laser | SoundEvent::Nav) {
+        let decay = if matches!(
+            event,
+            SoundEvent::Explosion | SoundEvent::Damage | SoundEvent::Laser | SoundEvent::Nav
+        ) {
             (1.0 - progress).powf(1.4)
-        } else { 0.8 };
+        } else {
+            0.8
+        };
         samples.push(mixed * envelope(t, duration) * decay * 0.62);
     }
     wav(&samples)
@@ -238,10 +301,19 @@ mod tests {
         for bytes in clips {
             assert_eq!(&bytes[..4], b"RIFF");
             assert_eq!(&bytes[8..16], b"WAVEfmt ");
-            assert_eq!(u32::from_le_bytes(bytes[40..44].try_into().unwrap()) as usize, bytes.len() - 44);
-            let pcm: Vec<i16> = bytes[44..].chunks_exact(2)
-                .map(|part| i16::from_le_bytes([part[0], part[1]])).collect();
-            let peak = pcm.iter().map(|sample| (*sample as i32).abs()).max().unwrap();
+            assert_eq!(
+                u32::from_le_bytes(bytes[40..44].try_into().unwrap()) as usize,
+                bytes.len() - 44
+            );
+            let pcm: Vec<i16> = bytes[44..]
+                .chunks_exact(2)
+                .map(|part| i16::from_le_bytes([part[0], part[1]]))
+                .collect();
+            let peak = pcm
+                .iter()
+                .map(|sample| (*sample as i32).abs())
+                .max()
+                .unwrap();
             assert!(peak > 1000 && peak < 32767, "unexpected peak: {peak}");
             assert!(pcm.first().unwrap().abs() < 1500);
             assert!(pcm.last().unwrap().abs() < 1500);

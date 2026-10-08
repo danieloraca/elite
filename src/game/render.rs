@@ -36,7 +36,13 @@ impl Game {
                     CYAN,
                 );
                 label("PRESS R TO START AGAIN", 313.0, 407.0, 25.0, GOLD);
-                label(if muted { "M SOUND OFF" } else { "M SOUND ON" }, 394.0, 452.0, 18.0, DIM);
+                label(
+                    if muted { "M SOUND OFF" } else { "M SOUND ON" },
+                    394.0,
+                    452.0,
+                    18.0,
+                    DIM,
+                );
             }
         }
         if self.paused {
@@ -76,7 +82,11 @@ impl Game {
         );
         label("ENTER OR SPACE TO START", 318.0, 490.0, 29.0, GOLD);
         label(
-            if muted { "M SOUND OFF  |  ARROWS TURN  |  W/S THRUST" } else { "M SOUND ON  |  ARROWS TURN  |  W/S THRUST" },
+            if muted {
+                "M SOUND OFF  |  ARROWS TURN  |  W/S THRUST"
+            } else {
+                "M SOUND ON  |  ARROWS TURN  |  W/S THRUST"
+            },
             315.0,
             568.0,
             18.0,
@@ -214,7 +224,13 @@ impl Game {
             CYAN,
         );
         label(&format!("KILLS {:02}", self.kills), 24.0, 646.0, 19.0, CYAN);
-        label(if muted { "M SOUND OFF" } else { "M SOUND ON" }, 24.0, 676.0, 16.0, DIM);
+        label(
+            if muted { "M SOUND OFF" } else { "M SOUND ON" },
+            24.0,
+            676.0,
+            16.0,
+            DIM,
+        );
         label(
             &format!("SPEED {:03}", self.ship.speed as i32),
             682.0,
@@ -338,7 +354,13 @@ impl Game {
         if self.message_timer > 0.0 {
             label(&self.message, 54.0, 665.0, 21.0, GOLD);
         }
-        label(if muted { "M SOUND OFF" } else { "M SOUND ON" }, 54.0, 700.0, 16.0, DIM);
+        label(
+            if muted { "M SOUND OFF" } else { "M SOUND ON" },
+            54.0,
+            700.0,
+            16.0,
+            DIM,
+        );
     }
 }
 

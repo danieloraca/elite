@@ -4,6 +4,8 @@ A playable Rust tribute to wireframe space trading games of the 1980s. Fly to a 
 
 The music and sound effects are original retro synths generated from Rust code. Music starts with the game; **M** mutes or unmutes it. Leaving the browser tab pauses the game and silences audio; press **P** to resume.
 
+To export a WAV of the original theme for listening without opening a game window, run `cargo run --release -- --export-music`. The file is written to `target/wirespace-theme.wav`.
+
 ## Play in a browser
 
 Build the Rust game as WebAssembly and collect the complete static site:
@@ -15,7 +17,26 @@ python3 -m http.server 8080 --directory dist
 
 Open `http://localhost:8080`, click the game to focus it, then press Enter. The machine serving the files does not run the game logic; the browser does. Keep `index.html`, `elite.wasm`, `mq_js_bundle.js`, `app.js`, and `styles.css` together when deploying.
 
-To host it on a Raspberry Pi, build on your development machine and copy the contents of `dist/` to a directory served by nginx, Caddy, or another static HTTP server on the Pi. Serve `.wasm` as `application/wasm`. The Pi does not need a Rust toolchain for hosting.
+## Run on the Raspberry Pi
+
+The Pi runs a small Rust HTTP server as `wirespace.service` on port **3141**. The game itself runs in each player's browser. Like Dario's deploy flow, the browser build is made locally and the server is built on the Pi; the Pi needs Rust installed for deployment.
+
+From this checkout, with SSH and sudo access to the Pi:
+
+```sh
+sh scripts/deploy-pi.sh
+```
+
+The default SSH destination is `danutz@192.168.0.25`. Set `PI_HOST=user@host` to use another address. The service unit assumes the Pi account and install path are `danutz` and `/home/danutz/Development/elite`; adjust `deploy/wirespace.service` and `deploy/install.sh` together if those differ.
+
+After deployment, open `http://192.168.0.25:3141/` on the local network. The deploy script checks that port 3141 is available, enables the service at boot, and verifies the page and WASM content type. To inspect it on the Pi:
+
+```sh
+systemctl status wirespace.service
+journalctl -u wirespace.service -n 50 --no-pager
+```
+
+For a local server check after `./scripts/build-web.sh`, run `cargo run --release -p wirespace-server` from the project root and open `http://127.0.0.1:3141/`.
 
 ## Play as a desktop app
 

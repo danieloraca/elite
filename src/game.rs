@@ -1,5 +1,5 @@
-use macroquad::prelude::*;
 use crate::sound::SoundEvent;
+use macroquad::prelude::*;
 
 pub(crate) const WIDTH: f32 = 960.0;
 pub(crate) const HEIGHT: f32 = 720.0;
@@ -383,7 +383,7 @@ impl Game {
                     attack_timer: 3.0,
                     spin: 0.0,
                 });
-                self.sounds.push(SoundEvent::Nav);
+                self.sounds.push(SoundEvent::Alert);
                 self.say("HOSTILE CONTACT DETECTED");
             }
         }
